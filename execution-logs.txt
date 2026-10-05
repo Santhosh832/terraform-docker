@@ -1,0 +1,250 @@
+# TASK 3 - INFRASTRUCTURE AS CODE (IaC) WITH TERRAFORM
+
+Project:
+Terraform Docker Nginx Deployment
+
+Objective:
+Provision a local Docker container using Terraform.
+
+Environment:
+
+* Operating System: Windows
+* Terraform: v1.16.5
+* Platform: windows_amd64
+* Docker: 28.1.1
+* Docker Desktop
+* Docker Image: nginx:latest
+
+---
+
+1. TERRAFORM VERSION
+
+---
+
+Command:
+
+terraform version
+
+Output:
+
+Terraform v1.16.5
+on windows_amd64
+
+---
+
+2. TERRAFORM INITIALIZATION
+
+---
+
+Command:
+
+terraform init
+
+Result:
+
+Terraform initialized successfully.
+
+Docker provider installed:
+
+kreuzwerker/docker v3.9.0
+
+Output included:
+
+Terraform has been successfully initialized!
+
+---
+
+3. TERRAFORM VALIDATION
+
+---
+
+Command:
+
+terraform validate
+
+Result:
+
+Success! The configuration is valid.
+
+---
+
+4. TERRAFORM PLAN
+
+---
+
+Command:
+
+terraform plan
+
+Initial plan:
+
+Plan: 2 to add, 0 to change, 0 to destroy.
+
+Resources:
+
+* docker_image.nginx
+* docker_container.nginx
+
+---
+
+5. INITIAL APPLY ATTEMPT
+
+---
+
+Command:
+
+terraform apply
+
+The initial deployment attempt failed because host port 8080
+was already being used by another service.
+
+Error:
+
+Ports are not available:
+listen tcp 0.0.0.0:8080: bind:
+Only one usage of each socket address...
+
+---
+
+6. TROUBLESHOOTING
+
+---
+
+Docker containers were checked using:
+
+docker ps
+
+The following services were already using Docker ports:
+
+Jenkins:
+8081 -> 8080
+
+Docker-in-Docker:
+2376
+3001
+
+Port 8080 was also checked using:
+
+netstat -ano | findstr :8080
+
+Port 8080 was already listening on the host.
+
+Instead of stopping the existing Jenkins environment,
+the Terraform configuration was changed to use port 8082.
+
+---
+
+7. TERRAFORM CONFIGURATION UPDATE
+
+---
+
+Updated port mapping:
+
+Host port:      8082
+Container port: 80
+
+Configuration:
+
+ports {
+internal = 80
+external = 8082
+}
+
+---
+
+8. TERRAFORM PLAN AFTER FIX
+
+---
+
+Command:
+
+terraform plan
+
+Result:
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+The Nginx image already existed in Terraform state, so
+Terraform only needed to create the Docker container.
+
+---
+
+9. SUCCESSFUL TERRAFORM APPLY
+
+---
+
+Command:
+
+terraform apply
+
+Confirmation:
+
+yes
+
+Result:
+
+docker_container.nginx: Creation complete
+
+Apply complete!
+
+Resources:
+1 added
+0 changed
+0 destroyed
+
+---
+
+10. DOCKER VERIFICATION
+
+---
+
+Command:
+
+docker ps
+
+Terraform-managed container:
+
+Name:
+terraform-nginx
+
+Port mapping:
+
+0.0.0.0:8082->80/tcp
+
+Container status:
+
+Running
+
+---
+
+11. APPLICATION VERIFICATION
+
+---
+
+URL:
+
+http://localhost:8082
+
+Result:
+
+Nginx Welcome Page displayed successfully.
+
+---
+
+12. FINAL RESULT
+
+---
+
+Terraform successfully provisioned an Nginx Docker container.
+
+Final status:
+
+Terraform initialization: SUCCESS
+Terraform validation:     SUCCESS
+Terraform plan:            SUCCESS
+Terraform apply:           SUCCESS
+Docker container:          RUNNING
+Nginx application:        ACCESSIBLE
+Browser verification:     SUCCESS
+
+TASK 3 COMPLETED SUCCESSFULLY.
